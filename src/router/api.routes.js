@@ -3,7 +3,9 @@ const BASE_API_URL ="http://127.0.0.1:5000/"
 
 
 // Scaled Order API URLs
-export const CAMPAIGN_DATA_API_URL = BASE_API_URL + "campaignData";
+export const CAMPAIGN_TEST_API_URL = BASE_API_URL + "campaignTest";
+
+export const CAMPAIGN_RUN_API_URL = BASE_API_URL + "campaignRun";
 
 // Position API URLs
 export const POSITIONS_API_URL = BASE_API_URL + "positions/";

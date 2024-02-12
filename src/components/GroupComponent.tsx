@@ -3,6 +3,7 @@ import VoCodeJobCampaign from "../pages/VoCodeJobCampaign";
 import Company from "../pages/Company";
 import { Link } from 'react-router-dom';
 import VoCodeRecruiterProfile from "../pages/VoCodeRecruiterProfile";
+import React, { useState, useEffect } from 'react';
 export type GroupComponentType = {
   /** Style props */
   rowOfNestedInteractiveBroWidth?: CSSProperties["width"];
@@ -13,6 +14,29 @@ const GroupComponent: FunctionComponent<GroupComponentType> = ({
   rowOfNestedInteractiveBroWidth,
   logoutAlignSelf,
 }) => {
+
+  const [currentDate, setCurrentDate] = useState('');
+  const [currentTime, setCurrentTime] = useState('');
+
+  useEffect(() => {
+    // Function to update the current date and time
+    const updateDateTime = () => {
+      const now = new Date();
+      const formattedDate = now.toLocaleDateString();
+      const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+      setCurrentDate(formattedDate);
+      setCurrentTime(formattedTime);
+    };
+
+    // Initial update
+    updateDateTime();
+
+    // Update the date and time every second
+    const intervalId = setInterval(updateDateTime, 1000);
+
+    // Cleanup function to clear the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []); // Empty dependency array ensures the effect runs only once on mount
   const interactiveBrokerNestedFramStyle: CSSProperties = useMemo(() => {
     return {
       width: rowOfNestedInteractiveBroWidth,
@@ -75,13 +99,13 @@ const GroupComponent: FunctionComponent<GroupComponentType> = ({
       <div className="flex flex-row items-start justify-start py-0 pr-[29px] pl-0 gap-[18px] mq1275:hidden">
         <div className="relative leading-[24px] font-medium z-[1]">Date:</div>
         <div className="relative leading-[24px] text-gray-100 z-[1]">
-          03/02/22
+          {currentDate}
         </div>
       </div>
       <div className="relative leading-[24px] font-medium z-[1]">Time:</div>
       <div className="flex flex-col items-start justify-start py-0 pr-6 pl-0 text-gray-100">
         <div className="relative leading-[24px] whitespace-nowrap z-[1]">
-          12:45 AM EST
+          {currentTime}
         </div>
       </div>
       <div

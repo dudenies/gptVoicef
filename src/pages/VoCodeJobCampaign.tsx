@@ -3,16 +3,27 @@ import { FunctionComponent } from "react";
 import { useState ,useEffect} from "react";
 import GroupComponent from "../components/GroupComponent";
 import {
-  runCampaign
+  runCampaign,testCampaign
 } from "../services/campaign.services";
 const VoCodeJobCampaign: FunctionComponent = () => {
   interface Question {
     id: string;
     label: string;
   }
-  async function postDataToCampaignDataEndpoint(data:any) {
+  async function runCampaignDataEndpoint(data:any) {
     try {
       const response = await runCampaign(data);
+      console.log('Campaign data written successfully:', response);
+      // Handle success response if needed
+    } catch (error) {
+      console.error('Error writing campaign data:', error);
+      // Handle error if needed
+    }
+  }
+
+  async function testCampaignDataEndpoint(data:any) {
+    try {
+      const response = await testCampaign(data);
       console.log('Campaign data written successfully:', response);
       // Handle success response if needed
     } catch (error) {
@@ -170,7 +181,6 @@ const VoCodeJobCampaign: FunctionComponent = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; // Get the selected file
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = (event) => {
       if (!event.target) return;
@@ -186,8 +196,10 @@ const VoCodeJobCampaign: FunctionComponent = () => {
       // Assume the first row contains headers
       const headers = filteredData[0];
       const parsedData = filteredData.slice(1).map(row =>
-        headers.reduce((acc: { [key: string]: string }, header, index) => {
-          acc[header] = row[index];
+        headers.reduce((acc: { [key: string]: any }, header, index) => {
+          // Use regular expression to detect numeric values and convert them to strings
+          const value = row[index];
+          acc[header] = value;
           return acc;
         }, {})
       );
@@ -682,7 +694,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
               </div>
               <button
       className="cursor-pointer border-none py-[14.008905410766602px] px-[21px] bg-deepskyblue-100 h-[51px] rounded-6xs flex items-center justify-center box-border whitespace-nowrap hover:bg-deepskyblue-200"
-      onClick={() => postDataToCampaignDataEndpoint(campaignFormData)} // Call the function directly on button click
+      onClick={() => testCampaignDataEndpoint(campaignFormData)} // Call the function directly on button click
     >
       <b className="relative text-base tracking-[1.75px] leading-[22.41px] uppercase font-button-button text-white text-left">
         test call
@@ -739,11 +751,14 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   Run Later
                 </b>
               </button>
-              <button className="cursor-pointer [border:none] py-[14.008905410766602px] px-[22px] bg-forestgreen-200 h-[51px] rounded-6xs flex flex-row items-center justify-center box-border whitespace-nowrap hover:bg-limegreen">
-                <b className="relative text-base tracking-[1.75px] leading-[22.41px] font-button-button text-white text-left">
-                  Run Now
-                </b>
-              </button>
+              <button
+      className="cursor-pointer border-none py-[14.008905410766602px] px-[21px] bg-deepskyblue-100 h-[51px] rounded-6xs flex items-center justify-center box-border whitespace-nowrap hover:bg-deepskyblue-200"
+      onClick={() => runCampaignDataEndpoint(campaignFormData)} // Call the function directly on button click
+    >
+      <b className="relative text-base tracking-[1.75px] leading-[22.41px] uppercase font-button-button text-white text-left">
+        RUN NOW
+      </b>
+    </button>
             </div>
           </footer>
         </section>
