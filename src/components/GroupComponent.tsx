@@ -54,9 +54,11 @@ const GroupComponent: FunctionComponent<GroupComponentType> = ({
       <div className="flex flex-column">
       <div className="h-[78px] w-[1920px] relative bg-white box-border hidden max-w-full border-[0.5px] border-solid border-gainsboro-100" />
       <div className="w-[494px] flex flex-col items-start justify-start max-w-full text-9xl">
-        <h2 className="m-0 relative text-inherit tracking-[0.18px] leading-[47px] font-medium font-inherit whitespace-nowrap z-[1]">
-          VoCode-Profile Setup
-        </h2>
+      <img
+  src="https://pulse.aptask.com/assets/images/logo/ApTask-Logo.png"
+  alt="ApTask Logo"
+  className="m-0 relative tracking-[0.18px] leading-[47px] font-medium font-inherit whitespace-nowrap z-[1]"
+/>
       </div>
       <div className="flex-1 flex flex-row items-start justify-start gap-[10.61px] max-w-full z-[2] text-sm-8 text-gray-100">
         <div className="w-[190px] flex flex-row items-center justify-start gap-[10.08px] mq1600:hidden">
@@ -87,7 +89,7 @@ const GroupComponent: FunctionComponent<GroupComponentType> = ({
           <b className="relative leading-[23.05px] capitalize whitespace-nowrap">
             Calls Completed
           </b>
-          <div className="h-[33.9px] w-[100px] rounded-8xs-8 bg-whitesmoke-400 box-border overflow-hidden shrink-0 flex flex-row items-center justify-start py-[10.609318733215332px] pr-4 pl-[15.913978576660156px] border-[0.2px] border-solid border-gray-100">
+          <div className="h-[33.9px] w-[100px] rounded-8xs-8 bg-whitesmoke-400 box-border overflow-hidden shrink-0 flex flex-row items-center justify-start py-[10px] pr-4 pl-[15px] border-[0.2px] border-solid border-gray-100">
             <input
               className="w-full [border:none] [outline:none] font-button-button text-sm-8 bg-[transparent] h-6 flex-1 relative leading-[23.05px] text-gray-100 text-left inline-block min-w-[41px]"
               placeholder="999"

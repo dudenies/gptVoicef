@@ -1,16 +1,16 @@
 import { FunctionComponent } from "react";
 //import useState
-import { useState ,useEffect} from "react";
+import { useState, useEffect, useRef } from "react";
 import GroupComponent from "../components/GroupComponent";
 import {
-  runCampaign,testCampaign
+  runCampaign, testCampaign
 } from "../services/campaign.services";
 const VoCodeJobCampaign: FunctionComponent = () => {
   interface Question {
     id: string;
     label: string;
   }
-  async function runCampaignDataEndpoint(data:any) {
+  async function runCampaignDataEndpoint(data: any) {
     try {
       const response = await runCampaign(data);
       console.log('Campaign data written successfully:', response);
@@ -20,8 +20,14 @@ const VoCodeJobCampaign: FunctionComponent = () => {
       // Handle error if needed
     }
   }
+  const selectRef = useRef<HTMLSelectElement | null>(null); // Reference to the select element
 
-  async function testCampaignDataEndpoint(data:any) {
+  const handleDropdownClick = () => {
+    if (selectRef.current) {
+      selectRef.current.click(); // Programmatically trigger click event on the select element
+    }
+  };
+  async function testCampaignDataEndpoint(data: any) {
     try {
       const response = await testCampaign(data);
       console.log('Campaign data written successfully:', response);
@@ -52,7 +58,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     { id: "RecruiterName", label: "Recruiter Name" },
     { id: "RecruiterPhoneNumber", label: "Recruiter Phone Number" },
     { id: "RecruiterEmail", label: "Recruiter Email" },
-    { id: "Link", label: "Link" },
+    { id: "Link", label: "Calendly Link" },
     { id: "VoiceGender", label: "Voice Gender" },
     { id: "Voice", label: "Voice" },
     { id: "EmailTemplate", label: "Email Template" },
@@ -126,7 +132,22 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     const { value } = e.target;
     setFormData((prevData: any) => ({ ...prevData, [id]: value }));
   };
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    const { value, checked } = e.target;
+    setFormData((prevData: any) => {
+      // Get the existing array of selected values or initialize it as an empty array
+      const selectedValues = prevData[id] || [];
   
+      // Update the array based on whether the checkbox is checked or unchecked
+      const updatedValues = checked
+        ? [...selectedValues, value] // Add the value if checkbox is checked
+        : selectedValues.filter((val: any) => val !== value); // Remove the value if checkbox is unchecked
+  
+      // Update the form data with the new array of selected values
+      return { ...prevData, [id]: updatedValues };
+    });
+  };
+
   const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
   const [desiredSkills, setDesiredSkills] = useState<string[]>([]);
 
@@ -177,9 +198,12 @@ const VoCodeJobCampaign: FunctionComponent = () => {
   const handleIndustrylRemove = (index: number) => {
     setIndustry((prevIndustry) => prevIndustry.filter((_, i) => i !== index));
   };
-
+  const [fileName, setFileName] = useState("");
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; // Get the selected file
+    if (file) {
+      setFileName(file.name); // Update the state with the file name
+    }
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -203,7 +227,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
           return acc;
         }, {})
       );
-      
+
 
       // Set the parsed data in the campaignFormData state
       setFormData((prevData: any) => ({
@@ -219,22 +243,23 @@ const VoCodeJobCampaign: FunctionComponent = () => {
       <GroupComponent />
       <main className="self-stretch flex flex-col items-start justify-start max-w-full">
         <section className="self-stretch bg-white box-border flex flex-col items-start justify-start py-5 pr-[51px] pl-[49px] gap-[8px] max-w-full text-left text-lg text-gray-100 font-button-button border-[0.5px] border-solid border-gainsboro-100 mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
-          <div className="self-stretch flex flex-row flex-wrap items-end justify-start py-0 pr-px pl-0 box-border gap-[20px] max-w-full text-left text-lg text-gray-100 font-button-button">
-          <div className="w-[461px] flex flex-col items-start justify-start gap-[10px] max-w-full">
-  <b className="relative leading-[25.27px] capitalize">{campaignNameQuestion?.label} <span className="text-red-500">*</span> {/* Red star icon */}</b>
-  <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
-    <input
-      className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[250px] max-w-full"
-      placeholder={campaignNameQuestion?.label}
-      type="text"
-      onChange={(e) => handleInputChange(e, campaignNameQuestion?.id || "")}
-      required // Add the required attribute
-    />
-    
-  </div>
-</div>
+          <div className="w-full self-stretch flex flex-row flex-wrap items-end justify-start py-0 pr-px pl-0 box-border gap-[20px] max-w-full text-left text-lg text-gray-100 font-button-button mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
+            <div className="w-1/4 flex flex-col flex-wrap items-start justify-start gap-[10px] max-w-full">
+              <b className="relative leading-[25.27px] capitalize">{campaignNameQuestion?.label} <span className="text-red-500">*</span> {/* Red star icon */}</b>
+              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row flex-wrap items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
+                <input
+                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[250px] max-w-full"
+                  placeholder={campaignNameQuestion?.label}
+                  type="text"
+                  onChange={(e) => handleInputChange(e, campaignNameQuestion?.id || "")}
+                  tabIndex={1}
+                  required // Add the required attribute
+                />
 
-            <div className="w-[461px] flex flex-col items-start justify-start gap-[10px] max-w-full">
+              </div>
+            </div>
+
+            <div className="w-1/4 flex flex-wrap flex-col items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">{jobTitleQuestion?.label}</b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
@@ -242,6 +267,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   placeholder={jobTitleQuestion?.label}
                   type="text"
                   onChange={(e) => handleInputChange(e, jobTitleQuestion?.id || "")}
+                  tabIndex={2}
                 />
               </div>
             </div>
@@ -253,10 +279,18 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   placeholder={jobDivaJobIDQuestion?.label}
                   type="text"
                   onChange={(e) => handleInputChange(e, jobDivaJobIDQuestion?.id || "")}
+                  tabIndex={3}
                 />
               </div>
             </div>
-            <div className="w-[525px] flex flex-col items-start justify-start gap-[10px] max-w-full">
+            <button className="cursor-pointer [border:none] p-0 bg-[transparent] gap-[50px] flex flex-row items-end justify-start">
+              <div className="h-[51px] rounded-6xs bg-gray-100 flex flex-row items-center justify-center py-[14.008905410766602px] px-[21px] box-border whitespace-nowrap">
+                <b className="relative text-base tracking-[1.75px] leading-[22.41px] font-button-button text-white text-left">
+                  Fetch JD
+                </b>
+              </div>
+            </button>
+            <div className="w-1/4 flex flex-col items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">Job Type</b>
               <div className="self-stretch flex flex-row items-center justify-start py-0 pr-px pl-0 box-border gap-[10px] max-w-full text-base text-darkslategray-200 mq900:flex-wrap">
                 <div className="flex flex-row items-center justify-start gap-[5.81px]">
@@ -266,9 +300,10 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                     onChange={handleJobTypeChange}
                     value="Full Time"
                     type="radio"
+                    tabIndex={4}
                   />
                   <div className="relative leading-[25.27px] capitalize font-medium">
-                    Full Time
+                    Fulltime
                   </div>
                   {jobType === 'Full Time' && (
                     <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 min-w-[75px] border-[0.2px] border-solid border-gray-100">
@@ -277,6 +312,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                         placeholder={salaryQuestion?.label}
                         type="text"
                         onChange={(e) => handleInputChange(e, salaryQuestion?.id || "")}
+                        tabIndex={5}
                       />
                     </div>
                   )}
@@ -290,6 +326,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                         onChange={handleJobTypeChange}
                         value="Contract"
                         type="radio"
+                        tabIndex={6}
                       />
                       <div className="relative leading-[25.27px] capitalize font-medium">
                         Contract
@@ -303,6 +340,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                             placeholder={hourlyRateQuestion?.label}
                             type="text"
                             onChange={(e) => handleInputChange(e, hourlyRateQuestion?.id || "")}
+                            tabIndex={7}
                           />
                         </div>
                         <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 min-w-[75px] text-sm text-gray-100 border-[0.2px] border-solid border-gray-100">
@@ -311,6 +349,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                             placeholder={durationQuestion?.label}
                             type="text"
                             onChange={(e) => handleInputChange(e, durationQuestion?.id || "")}
+                            tabIndex={8}
                           />
                         </div>
                       </>
@@ -319,47 +358,44 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 </div>
               </div>
             </div>
-            <button className="cursor-pointer [border:none] p-0 bg-[transparent] flex flex-row items-end justify-start">
-              <div className="h-[51px] rounded-6xs bg-gray-100 flex flex-row items-center justify-center py-[14.008905410766602px] px-[21px] box-border whitespace-nowrap">
-                <b className="relative text-base tracking-[1.75px] leading-[22.41px] font-button-button text-white text-left">
-                  Fetch JD
-                </b>
-              </div>
-            </button>
+
           </div>
           <div className="self-stretch flex flex-row flex-wrap items-end justify-start py-0 pr-0.5 pl-0 box-border gap-[20px] max-w-full text-left text-lg text-gray-100 font-button-button">
-            <div className="w-[936px] flex flex-col items-start justify-start gap-[10px] max-w-full">
+            <div className="w-1/2 flex flex-col items-start justify-start gap-[15px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">Job Location</b>
               <div className="self-stretch flex flex-row items-start justify-start py-0 pr-px pl-0 gap-[10px] mq900:flex-wrap">
-                <div className="flex-1 flex flex-row items-center justify-start min-w-[229px]">
+                <div className="flex-1 flex flex-row items-center justify-start w-3/10">
                   <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 border-[0.2px] border-solid border-gray-100">
                     <input
                       className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[171px]"
                       placeholder={cityQuestion?.label}
                       type="text"
                       onChange={(e) => handleInputChange(e, cityQuestion?.id || "")}
+                      tabIndex={9}
                     />
                   </div>
                 </div>
-                <div className="flex-[0.933] rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 min-w-[229px] border-[0.2px] border-solid border-gray-100 mq450:flex-1">
+                <div className="flex-[0.933] rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 w-3/10 border-[0.2px] border-solid border-gray-100 mq450:flex-1">
                   <input
                     className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[171px]"
                     placeholder={stateQuestion?.label}
                     type="text"
                     onChange={(e) => handleInputChange(e, stateQuestion?.id || "")}
+                    tabIndex={10}
                   />
                 </div>
-                <div className="flex-[0.933] rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 min-w-[229px] border-[0.2px] border-solid border-gray-100 mq450:flex-1">
+                <div className="flex-[0.933] rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 w-3/10 border-[0.2px] border-solid border-gray-100 mq450:flex-1">
                   <input
                     className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[171px]"
                     placeholder={zipCodeQuestion?.label}
                     type="text"
                     onChange={(e) => handleInputChange(e, zipCodeQuestion?.id || "")}
+                    tabIndex={11}
                   />
                 </div>
               </div>
             </div>
-            <div className="w-[274px] flex flex-col items-start justify-start gap-[10px] min-w-[178px]">
+            <div className="w-1/7 flex flex-col items-start justify-start gap-[10px] ">
               <b className="relative leading-[25.27px] capitalize">Seniority level</b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] whitespace-nowrap text-sm border-[0.2px] border-solid border-gray-100">
                 <select
@@ -370,154 +406,181 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   <option className="text-lg" value="Mid">Mid</option>
                   <option className="text-lg" value="Low">Low</option>
                 </select>
-                <img className="h-3 w-[22px] relative" alt="" src="/vector-1.svg" />
+                <div className="relative z-10">
+            <div
+              className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+              onClick={handleDropdownClick} // Handle click on arrow image
+            >
+              <img
+                className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                alt=""
+                src="/vector-5.svg"
+              />
+            </div>
+          </div>
               </div>
             </div>
-            <div className="w-[274px] flex flex-row items-center justify-start gap-[30px] min-w-[178px] min-h-[46px] text-base text-gray-200">
-  <label className="flex flex-row items-center justify-start gap-[10px]">
-    <input
-      type="radio"
-      name="remoteOrHybrid"
-      className="h-[23px] w-[23px] relative"
-      value="Remote"
-      onChange={(e) => handleRadioChange(e, remoteHybridQuestion?.id || "")}
-    />
-    <div className="relative leading-[25.27px] capitalize font-medium">
-      Remote
-    </div>
-  </label>
-  <label className="flex flex-row items-center justify-start gap-[10px]">
-    <input
-      type="radio"
-      name="remoteOrHybrid"
-      className="h-[23px] w-[23px] relative"
-      value="Hybrid"
-      onChange={(e) => handleRadioChange(e,remoteHybridQuestion?.id || "")}
-    />
+            <div className="w-1/7 flex flex-row items-center justify-start gap-[30px] min-w-[178px] min-h-[46px] text-base text-darkslategray-200">
+              <label className="flex flex-row items-center justify-start gap-[10px]">
+                <input
+                  type="checkbox"
+                  name="remoteOrHybrid"
+                  className="h-[23px] w-[23px] relative"
+                  value="Remote"
+                  onChange={(e) => handleCheckboxChange(e, remoteHybridQuestion?.id || "")}
+                  tabIndex={12}
+                />
+                <div className="relative leading-[25.27px] capitalize font-medium">
+                  Remote
+                </div>
+              </label>
+              <label className="flex flex-row items-center justify-start gap-[10px]">
+                <input
+                  type="checkbox"
+                  name="remoteOrHybrid"
+                  className="h-[23px] w-[23px] relative"
+                  value="Hybrid"
+                  onChange={(e) => handleCheckboxChange(e, remoteHybridQuestion?.id || "")}
+                  tabIndex={13}
+                />
 
-    <div className="relative leading-[25.27px] capitalize font-medium">Hybrid</div>
-  </label>
-</div>
-<div className="w-[274px] flex flex-col items-start justify-start gap-[10px] min-w-[178px]">
-<b className="relative leading-[25.27px] capitalize">LLM</b>
-<div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] whitespace-nowrap text-sm border-[0.2px] border-solid border-gray-100">
+                <div className="relative leading-[25.27px] capitalize font-medium">Hybrid</div>
+              </label>
+            </div>
+            <div className="w-1/6 flex flex-col items-start justify-start gap-[10px] min-w-[178px]">
+              <b className="relative leading-[25.27px] capitalize">LLM</b>
+              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] whitespace-nowrap text-sm border-[0.2px] border-solid border-gray-100">
 
-<select
-  className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
-  onChange={(e) => handleSelectChange(e,llmQuestion?.id || "")}
->
-  <option value="Synthflow" className="text-lg">Synthflow</option>
-  <option value="VoCode" className="text-lg">VoCode</option>
-</select>
-<img className="h-3 w-[22px] relative" alt="" src="/vector-1.svg" />
-</div>
-</div>
+                <select
+                  className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
+                  onChange={(e) => handleSelectChange(e, llmQuestion?.id || "")}
+                >
+                  <option value="Synthflow" className="text-lg">Synthflow</option>
+                  <option value="VoCode" className="text-lg">VoCode</option>
+                </select>
+                <div className="relative z-10">
+            <div
+              className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+              onClick={handleDropdownClick} // Handle click on arrow image
+            >
+              <img
+                className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                alt=""
+                src="/vector-5.svg"
+              />
+            </div>
+          </div>
+              </div>
+            </div>
           </div>
           <div className="self-stretch flex flex-row items-end justify-start max-w-full">
-  <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
-    <b className="relative leading-[25.27px] capitalize">
-      Job Description
-    </b>
-    <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 min-h-[222px] max-w-full text-sm border-[0.2px] border-solid border-gray-100" style={{ wordWrap: 'break-word' }}>
-  <div className="flex-1 relative leading-[25.27px]">
-  <textarea
-  className="block w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] relative leading-[25.27px] text-gray-100 text-left min-w-[171px] resize-none"
-  placeholder={jobDescriptionQuestion?.label}
-  rows={10} // Set the number of visible lines
-  onChange={(e) => handleTextareaChange(e, jobDescriptionQuestion?.id || "")} // Use the new function
-/>
-  </div>
-</div>
+            <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
+              <b className="relative leading-[25.27px] capitalize">
+                Job Description
+              </b>
+              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 min-h-[222px] max-w-full text-sm border-[0.2px] border-solid border-gray-100" style={{ wordWrap: 'break-word' }}>
+                <div className="flex-1 relative leading-[25.27px]">
+                  <textarea
+                    className="block w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] relative leading-[25.27px] text-gray-100 text-left min-w-[171px] resize-none"
+                    placeholder={jobDescriptionQuestion?.label}
+                    rows={10} // Set the number of visible lines
+                    onChange={(e) => handleTextareaChange(e, jobDescriptionQuestion?.id || "")} // Use the new function
+                  />
+                </div>
+              </div>
 
 
-  </div>
-</div>
-<div className="self-stretch flex flex-row items-end justify-start max-w-full text-left text-lg text-gray-100 font-button-button">
-      <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
-        <b className="relative leading-[25.27px] capitalize">Required Skills</b>
-        <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
-          <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap ">
-            {requiredSkills.map((skill, index) => (
-              <div key={index} className="flex items-center gap-[2.91px] rounded-[5.26px] bg-white">
-                <div className="relative text-sm leading-[25.27px] font-button-button text-gray-100 text-left ">{skill}</div>
-                <img
-                  className="h-[18.1px] w-[18.1px] cursor-pointer"
-                  alt=""
-                  src="/icbaselineclose.svg"
-                  onClick={() => handleSkillRemove(index)}
-                />
-              </div>
-            ))}
-            <input
-              className="w-[calc(100%_-_38.1px)] [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[10px]"
-              placeholder="Type a skill"
-              type="text"
-              value={requiredskillInput}
-              onChange={(e) => setRequiredSkillInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-    <div className="self-stretch flex flex-row items-end justify-start max-w-full text-left text-lg text-gray-100 font-button-button">
-      <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
-        <b className="relative leading-[25.27px] capitalize">Desired Skills</b>
-        <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
-          <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap ">
-            {desiredSkills.map((skill, index) => (
-              <div key={index} className="flex items-center gap-[2.91px] rounded-[5.26px] bg-white">
-                <div className="relative text-sm leading-[25.27px] font-button-button text-gray-100 text-left ">{skill}</div>
-                <img
-                  className="h-[18.1px] w-[18.1px] cursor-pointer"
-                  alt=""
-                  src="/icbaselineclose.svg"
-                  onClick={() => handleDesiredSkillRemove(index)}
-                />
+          <div className="self-stretch flex flex-row items-end justify-start max-w-full text-left text-lg text-gray-100 font-button-button">
+            <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
+              <b className="relative leading-[25.27px] capitalize">Required Skills</b>
+              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
+                <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap ">
+                  {requiredSkills.map((skill, index) => (
+                    <div key={index} className="flex items-center gap-[2.91px] rounded-[5.26px] bg-white">
+                      <div className="relative text-sm leading-[25.27px] font-button-button text-gray-100 text-left ">{skill}</div>
+                      <img
+                        className="h-[18.1px] w-[18.1px] cursor-pointer"
+                        alt=""
+                        src="/icbaselineclose.svg"
+                        onClick={() => handleSkillRemove(index)}
+                      />
+                    </div>
+                  ))}
+                  <input
+                    className="w-[calc(100%_-_38.1px)] [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[10px]"
+                    placeholder="Type a skill"
+                    type="text"
+                    value={requiredskillInput}
+                    onChange={(e) => setRequiredSkillInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    tabIndex={14}
+                  />
+                </div>
               </div>
-            ))}
-            <input
-              className="w-[calc(100%_-_38.1px)] [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[10px]"
-              placeholder="Type a skill"
-              type="text"
-              value={desiredSkillInput}
-              onChange={(e) => setDesiredSkillInput(e.target.value)}
-              onKeyDown={handleKeyDownDesired}
-            />
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
+          <div className="self-stretch flex flex-row items-end justify-start max-w-full text-left text-lg text-gray-100 font-button-button">
+            <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
+              <b className="relative leading-[25.27px] capitalize">Desired Skills</b>
+              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
+                <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap ">
+                  {desiredSkills.map((skill, index) => (
+                    <div key={index} className="flex items-center gap-[2.91px] rounded-[5.26px] bg-white">
+                      <div className="relative text-sm leading-[25.27px] font-button-button text-gray-100 text-left ">{skill}</div>
+                      <img
+                        className="h-[18.1px] w-[18.1px] cursor-pointer"
+                        alt=""
+                        src="/icbaselineclose.svg"
+                        onClick={() => handleDesiredSkillRemove(index)}
+                      />
+                    </div>
+                  ))}
+                  <input
+                    className="w-[calc(100%_-_38.1px)] [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[10px]"
+                    placeholder="Type a skill"
+                    type="text"
+                    value={desiredSkillInput}
+                    onChange={(e) => setDesiredSkillInput(e.target.value)}
+                    onKeyDown={handleKeyDownDesired}
+                    tabIndex={15}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
-    <div className="self-stretch flex flex-row items-end justify-start max-w-full text-left text-lg text-gray-100 font-button-button">
-      <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
-        <b className="relative leading-[25.27px] capitalize">Industry Experience </b>
-        <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
-          <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap ">
-          {industry.map((ind, index) => (
-              <div key={index} className="flex items-center gap-[2.91px] rounded-[5.26px] bg-white">
-                <div className="relative text-sm leading-[25.27px] font-button-button text-gray-100 text-left ">{ind}</div>
-                <img
-                  className="h-[18.1px] w-[18.1px] cursor-pointer"
-                  alt=""
-                  src="/icbaselineclose.svg"
-                  onClick={() => handleIndustrylRemove(index)}
-                />
+          <div className="self-stretch flex flex-row items-end justify-start max-w-full text-left text-lg text-gray-100 font-button-button">
+            <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
+              <b className="relative leading-[25.27px] capitalize">Industry Experience </b>
+              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
+                <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap ">
+                  {industry.map((ind, index) => (
+                    <div key={index} className="flex items-center gap-[2.91px] rounded-[5.26px] bg-white">
+                      <div className="relative text-sm leading-[25.27px] font-button-button text-gray-100 text-left ">{ind}</div>
+                      <img
+                        className="h-[18.1px] w-[18.1px] cursor-pointer"
+                        alt=""
+                        src="/icbaselineclose.svg"
+                        onClick={() => handleIndustrylRemove(index)}
+                      />
+                    </div>
+                  ))}
+                  <input
+                    className="w-[calc(100%_-_38.1px)] [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[10px]"
+                    placeholder="Type a industry"
+                    type="text"
+                    value={industryInput}
+                    onChange={(e) => setIndustryInput(e.target.value)}
+                    onKeyDown={handleKeyDownIndustry}
+                    tabIndex={16}
+                  />
+                </div>
               </div>
-            ))}
-            <input
-              className="w-[calc(100%_-_38.1px)] [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[10px]"
-              placeholder="Type a industry"
-              type="text"
-              value={industryInput}
-              onChange={(e) => setIndustryInput(e.target.value)}
-              onKeyDown={handleKeyDownIndustry}
-            />
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-          
+
         </section>
         <section className="self-stretch bg-white box-border flex flex-col items-start justify-start py-2.5 pr-[51px] pl-[49px] max-w-full text-left text-lg text-gray-100 font-button-button border-[0.5px] border-solid border-gainsboro-100 mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
           <div className="self-stretch flex flex-row flex-wrap items-end justify-start gap-[20px] max-w-full">
@@ -529,6 +592,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   placeholder={recruiterNameQuestion?.label}
                   type="text"
                   onChange={(e) => handleInputChange(e, recruiterNameQuestion?.id || "")}
+                  tabIndex={17}
                 />
               </div>
             </div>
@@ -540,12 +604,13 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   placeholder={recruiterPhoneNumberQuestion?.label}
                   type="text"
                   onChange={(e) => handleInputChange(e, recruiterPhoneNumberQuestion?.id || "")}
+                  tabIndex={18}
                 />
               </div>
             </div>
             <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[330px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">
-              {recruiterEmailQuestion?.label}
+                {recruiterEmailQuestion?.label}
               </b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
@@ -553,6 +618,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   placeholder={recruiterEmailQuestion?.label}
                   type="text"
                   onChange={(e) => handleInputChange(e, recruiterEmailQuestion?.id || "")}
+                  tabIndex={19}
                 />
               </div>
             </div>
@@ -564,6 +630,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   placeholder={linkQuestion?.label}
                   type="text"
                   onChange={(e) => handleInputChange(e, linkQuestion?.id || "")}
+                  tabIndex={20}
                 />
               </div>
             </div>
@@ -578,48 +645,58 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 </b>
                 <div className="h-[46px] flex flex-row items-start justify-start gap-[10px] text-base text-gray-200">
                   <div className="self-stretch flex flex-row items-center justify-start gap-[5.81px]">
-                  <input
-    className="cursor-pointer m-0 h-[23.3px] w-[23.3px] rounded-[58.14px] bg-white box-border border-[2.3px] border-solid border-gray-200"
-    type="radio"
-    name="radioGroup-1"
-    value="Male" // Set value attribute to "Male"
-    onChange={(e) => handleRadioChange(e, voiceGenderQuestion?.id || "")}
-  />
-  <div className="relative leading-[25.27px] capitalize font-medium">
-    Male
-  </div>
-</div>
-<div className="self-stretch flex flex-row items-center justify-start gap-[5.81px]">
-  <input
-    className="cursor-pointer m-0 h-[23.3px] w-[23.3px] rounded-[58.14px] bg-white box-border border-[2.3px] border-solid border-gray-200"
-    type="radio"
-    name="radioGroup-1"
-    value="Female" // Set value attribute to "Female"
-    onChange={(e) => handleRadioChange(e, voiceGenderQuestion?.id || "")}
-  />
-  <div className="relative leading-[25.27px] capitalize font-medium">
-    Female
-  </div>
+                    <input
+                      className="cursor-pointer m-0 h-[23.3px] w-[23.3px] rounded-[58.14px] bg-white box-border border-[2.3px] border-solid border-gray-200"
+                      type="radio"
+                      name="radioGroup-1"
+                      value="Male" // Set value attribute to "Male"
+                      onChange={(e) => handleRadioChange(e, voiceGenderQuestion?.id || "")}
+                      tabIndex={21}
+                    />
+                    <div className="relative leading-[25.27px] capitalize font-medium">
+                      Male
+                    </div>
                   </div>
-                  
+                  <div className="self-stretch flex flex-row items-center justify-start gap-[5.81px]">
+                    <input
+                      className="cursor-pointer m-0 h-[23.3px] w-[23.3px] rounded-[58.14px] bg-white box-border border-[2.3px] border-solid border-gray-200"
+                      type="radio"
+                      name="radioGroup-1"
+                      value="Female" // Set value attribute to "Female"
+                      onChange={(e) => handleRadioChange(e, voiceGenderQuestion?.id || "")}
+                      tabIndex={22}
+                    />
+                    <div className="relative leading-[25.27px] capitalize font-medium">
+                      Female
+                    </div>
+                  </div>
+
                 </div>
               </div>
               <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[330px] max-w-full">
                 <b className="relative leading-[25.27px] capitalize">Voice</b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] max-w-full whitespace-nowrap text-sm border-[0.2px] border-solid border-gray-100">
-                <select
-                  className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
-                  onChange={(e) => handleSelectChange(e, voiceQuestion?.id || "")} // Handle selection change
-                >
-                  <option className="text-lg" value="11Labs Kevin">11Labs Kevin</option>
-                  <option className="text-lg" value="Voice2">Voice2</option>
-                  <option className="text-lg" value="Voice3">Voice3</option>
-                </select>
-                  <img
-                    className="h-3 w-[22px] relative"
-                    alt=""
-                    src="/vector-5.svg"
-                  />
+                  <select
+                    className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
+                    onChange={(e) => handleSelectChange(e, voiceQuestion?.id || "")} // Handle selection change
+                    tabIndex={23}
+                  >
+                    <option className="text-lg" value="11Labs Kevin">11Labs Kevin</option>
+                    <option className="text-lg" value="Voice2">Voice2</option>
+                    <option className="text-lg" value="Voice3">Voice3</option>
+                  </select>
+                  <div className="relative z-10">
+            <div
+              className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+              onClick={handleDropdownClick} // Handle click on arrow image
+            >
+              <img
+                className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                alt=""
+                src="/vector-5.svg"
+              />
+            </div>
+          </div>
                 </div>
               </div>
               <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[330px] max-w-full">
@@ -627,19 +704,26 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   Email Template
                 </b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] max-w-full whitespace-nowrap text-sm border-[0.2px] border-solid border-gray-100">
-                <select
-                  className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
-                  onChange={(e) => handleSelectChange(e, emailTemplateQuestion?.id || "")} // Handle selection change
-                >
-                  <option className="text-lg" value="emailTemplate1">Email Template 1</option>
-                  <option className="text-lg" value="emailTemplate2">Email Template 2</option>
-                  <option className="text-lg" value="emailTemplate3">Email Template 3</option>
-                </select>
-                  <img
-                    className="h-3 w-[22px] relative"
-                    alt=""
-                    src="/vector-5.svg"
-                  />
+                  <select
+                    className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
+                    onChange={(e) => handleSelectChange(e, emailTemplateQuestion?.id || "")} // Handle selection change
+                  >
+                    <option className="text-lg" value="emailTemplate1">Email Template 1</option>
+                    <option className="text-lg" value="emailTemplate2">Email Template 2</option>
+                    <option className="text-lg" value="emailTemplate3">Email Template 3</option>
+                  </select>
+                  <div className="relative z-10">
+            <div
+              className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+              onClick={handleDropdownClick} // Handle click on arrow image
+            >
+              <img
+                className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                alt=""
+                src="/vector-5.svg"
+              />
+            </div>
+          </div>
                 </div>
               </div>
               <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[330px] max-w-full">
@@ -647,19 +731,26 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   SMS Template
                 </b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] max-w-full whitespace-nowrap text-sm border-[0.2px] border-solid border-gray-100">
-                <select
-                  className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
-                  onChange={(e) => handleSelectChange(e, smsTemplateQuestion?.id || "")} // Handle selection change
-                >
-                  <option className="text-lg" value="smsTemplateQuestion1">SMS Template 1</option>
-                  <option className="text-lg" value="smsTemplate2">SMS Template 2</option>
-                  <option className="text-lg" value="smsTemplate3">SMS Template 3</option>
-                </select>
-                  <img
-                    className="h-3 w-[22px] relative"
-                    alt=""
-                    src="/vector-5.svg"
-                  />
+                  <select
+                    className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
+                    onChange={(e) => handleSelectChange(e, smsTemplateQuestion?.id || "")} // Handle selection change
+                  >
+                    <option className="text-lg" value="smsTemplateQuestion1">SMS Template 1</option>
+                    <option className="text-lg" value="smsTemplate2">SMS Template 2</option>
+                    <option className="text-lg" value="smsTemplate3">SMS Template 3</option>
+                  </select>
+                  <div className="relative z-10">
+            <div
+              className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+              onClick={handleDropdownClick} // Handle click on arrow image
+            >
+              <img
+                className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                alt=""
+                src="/vector-5.svg"
+              />
+            </div>
+          </div>
                 </div>
               </div>
             </div>
@@ -671,35 +762,37 @@ const VoCodeJobCampaign: FunctionComponent = () => {
               <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[211px] max-w-full">
                 <b className="relative leading-[25.27px] capitalize">{testNameQuestion?.label}</b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 border-[0.2px] border-solid border-gray-100">
-                <input
-                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[250px] max-w-full"
-                  placeholder={testNameQuestion?.label}
-                  type="text"
-                  onChange={(e) => handleInputChange(e, testNameQuestion?.id || "")}
-                />
+                  <input
+                    className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[250px] max-w-full"
+                    placeholder={testNameQuestion?.label}
+                    type="text"
+                    onChange={(e) => handleInputChange(e, testNameQuestion?.id || "")}
+                    tabIndex={23}
+                  />
                 </div>
               </div>
               <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[211px] max-w-full">
                 <b className="relative leading-[25.27px] capitalize">
-                {testPhoneNumberQuestion?.label}
+                  {testPhoneNumberQuestion?.label}
                 </b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 border-[0.2px] border-solid border-gray-100">
-                <input
-                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[250px] max-w-full"
-                  placeholder={testPhoneNumberQuestion?.label}
-                  type="text"
-                  onChange={(e) => handleInputChange(e, testPhoneNumberQuestion?.id || "")}
-                />
+                  <input
+                    className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[250px] max-w-full"
+                    placeholder={testPhoneNumberQuestion?.label}
+                    type="text"
+                    onChange={(e) => handleInputChange(e, testPhoneNumberQuestion?.id || "")}
+                    tabIndex={24}
+                  />
                 </div>
               </div>
               <button
-      className="cursor-pointer border-none py-[14.008905410766602px] px-[21px] bg-deepskyblue-100 h-[51px] rounded-6xs flex items-center justify-center box-border whitespace-nowrap hover:bg-deepskyblue-200"
-      onClick={() => testCampaignDataEndpoint(campaignFormData)} // Call the function directly on button click
-    >
-      <b className="relative text-base tracking-[1.75px] leading-[22.41px] uppercase font-button-button text-white text-left">
-        test call
-      </b>
-    </button>
+                className="cursor-pointer border-none py-[14.008905410766602px] px-[21px] bg-deepskyblue-100 h-[51px] rounded-6xs flex items-center justify-center box-border whitespace-nowrap hover:bg-deepskyblue-200"
+                onClick={() => testCampaignDataEndpoint(campaignFormData)} // Call the function directly on button click
+              >
+                <b className="relative text-base tracking-[1.75px] leading-[22.41px] uppercase font-button-button text-white text-left">
+                  test call
+                </b>
+              </button>
               {/* <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[211px] max-w-full">
                 <b className="relative leading-[25.27px] capitalize">{`Recruiter Name `}</b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
@@ -712,36 +805,44 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 </div>
               </div> */}
               <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[211px] max-w-full">
-      <b className="relative leading-[25.27px] capitalize">CSV File</b>
-      <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
-        {/* Input element for file selection */}
-        <input
-          type="file"
-          accept=".csv"
-          onChange={handleFileChange}
-          className="hidden" // Hide the input element
-          id="csvFileInput"
-        />
-        <label htmlFor="csvFileInput" className="cursor-pointer">Upload CSV</label>
-      </div>
-    </div>
+                <b className="relative leading-[25.27px] capitalize">CSV File</b>
+                <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
+                  {/* Input element for file selection */}
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleFileChange}
+                    className="hidden" // Hide the input element
+                    id="csvFileInput"
+                    tabIndex={25}
+                  />
+                  <label htmlFor="csvFileInput" className="cursor-pointer">{fileName ? fileName : 'Upload CSV'}</label>
+                </div>
+              </div>
 
               <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[211px] max-w-full">
                 <b className="relative leading-[25.27px] capitalize">Client name</b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
-                <select
-                  className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
-                  onChange={(e) => handleSelectChange(e, clientNameQuestion?.id || "")} // Handle selection change
-                >
-                  <option className="text-lg" value="client1">client 1</option>
-                  <option className="text-lg" value="client2">client 2</option>
-                  <option className="text-lg" value="client3">client 3</option>
-                </select>
-                  <img
-                    className="h-[6.6px] w-[12.1px] relative"
-                    alt=""
-                    src="/vector-8.svg"
-                  />
+                  <select
+                    className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
+                    onChange={(e) => handleSelectChange(e, clientNameQuestion?.id || "")} // Handle selection change
+                  >
+                    <option className="text-lg" value="client1">client 1</option>
+                    <option className="text-lg" value="client2">client 2</option>
+                    <option className="text-lg" value="client3">client 3</option>
+                  </select>
+                  <div className="relative z-10">
+            <div
+              className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+              onClick={handleDropdownClick} // Handle click on arrow image
+            >
+              <img
+                className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                alt=""
+                src="/vector-8.svg"
+              />
+            </div>
+          </div>
                 </div>
               </div>
             </div>
@@ -752,13 +853,13 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 </b>
               </button>
               <button
-      className="cursor-pointer border-none py-[14.008905410766602px] px-[21px] bg-deepskyblue-100 h-[51px] rounded-6xs flex items-center justify-center box-border whitespace-nowrap hover:bg-deepskyblue-200"
-      onClick={() => runCampaignDataEndpoint(campaignFormData)} // Call the function directly on button click
-    >
-      <b className="relative text-base tracking-[1.75px] leading-[22.41px] uppercase font-button-button text-white text-left">
-        RUN NOW
-      </b>
-    </button>
+                className="cursor-pointer border-none py-[14.008905410766602px] px-[21px] bg-deepskyblue-100 h-[51px] rounded-6xs flex items-center justify-center box-border whitespace-nowrap hover:bg-deepskyblue-200"
+                onClick={() => runCampaignDataEndpoint(campaignFormData)} // Call the function directly on button click
+              >
+                <b className="relative text-base tracking-[1.75px] leading-[22.41px] uppercase font-button-button text-white text-left">
+                  RUN NOW
+                </b>
+              </button>
             </div>
           </footer>
         </section>
