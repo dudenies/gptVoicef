@@ -7,7 +7,6 @@ import {
   runCampaign, testCampaign
 } from "../services/campaign.services";
 const VoCodeJobCampaign: FunctionComponent = () => {
-  type CsvRow = { Name: string; Phone: string };
   interface Question {
     id: string;
     label: string;
@@ -62,7 +61,6 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     { id: "RecruiterEmail", label: "Recruiter Email" },
     { id: "Link", label: "Calendly Link" },
     { id: "VoiceGender", label: "Voice Gender" },
-    { id: "tts", label: "tts" },
     { id: "Voice", label: "Voice" },
     { id: "EmailTemplate", label: "Email Template" },
     { id: "SMSTemplate", label: "SMS Template" },
@@ -140,12 +138,12 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     setFormData((prevData: any) => {
       // Get the existing array of selected values or initialize it as an empty array
       const selectedValues = prevData[id] || [];
-
+  
       // Update the array based on whether the checkbox is checked or unchecked
       const updatedValues = checked
         ? [...selectedValues, value] // Add the value if checkbox is checked
         : selectedValues.filter((val: any) => val !== value); // Remove the value if checkbox is unchecked
-
+  
       // Update the form data with the new array of selected values
       return { ...prevData, [id]: updatedValues };
     });
@@ -201,28 +199,36 @@ const VoCodeJobCampaign: FunctionComponent = () => {
   const handleIndustrylRemove = (index: number) => {
     setIndustry((prevIndustry) => prevIndustry.filter((_, i) => i !== index));
   };
-  const [csvType, setCsvType] = useState("PlainCSV");
   const [fileName, setFileName] = useState("");
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; // Get the selected file
+    if (file) {
+      setFileName(file.name); // Update the state with the file name
+    }
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = (event) => {
       if (!event.target) return;
       const text = event.target.result as string;
 
       // Split the text by line breaks to get rows
-      const rows = text.split(/\r?\n/).slice(1, -1);
+      const rows = text.split(/\r?\n/);
 
+      // Parse the CSV data
+      const data = rows.map(row => row.split(','));
+      // Remove rows where all values are null
+      const filteredData = data.filter(row => row.some(value => value.trim() !== ''));
+      // Assume the first row contains headers
+      const headers = filteredData[0];
+      const parsedData = filteredData.slice(1).map(row =>
+        headers.reduce((acc: { [key: string]: any }, header, index) => {
+          // Use regular expression to detect numeric values and convert them to strings
+          const value = row[index];
+          acc[header] = value;
+          return acc;
+        }, {})
+      );
 
-      // Parse the CSV data based on the selected csvType
-      let parsedData: CsvRow[] | undefined;
-      if (csvType === "PlainCSV") {
-        parsedData = parsePlainCSV(rows);
-      } else if (csvType === "JDCSV") {
-        parsedData = parseJDCSV(rows);
-      }
 
       // Set the parsed data in the campaignFormData state
       setFormData((prevData: any) => ({
@@ -232,32 +238,13 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     };
     reader.readAsText(file);
   };
+const [csvType, setCsvType] = useState("PlainCSV");
 
-  const parsePlainCSV = (rows: string[]) => {
-    // Parse the PlainCSV format where the first column is for Name and the second column is for Phone
-    return rows.map(row => {
-      const [name, phone] = row.split(',');
-      return { Name: name, Phone: phone };
-    });
-  };
-
-  const parseJDCSV = (rows: string[]) => {
-    // Parse the JDCSV format where the first column is Name and the fifth column is Phone
-    return rows.map(row => {
-      const columns = row.split(',');
-      const name = columns[0];
-      const phone = columns[4];
-      return { Name: name, Phone: phone };
-    });
-  };
-
-
-
-  // Function to handle the dropdown selection change
-  const handleCsvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setCsvType(e.target.value);
-    // You can perform additional actions based on the selected value if needed
-  };
+// Function to handle the dropdown selection change
+const handleCsvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  setCsvType(e.target.value);
+  // You can perform additional actions based on the selected value if needed
+};
   return (
     <div className="w-full relative bg-whitesmoke-100 overflow-hidden flex flex-col items-start justify-start pt-0 px-0 pb-[25px] box-border tracking-[normal]">
       <GroupComponent />
@@ -422,23 +409,22 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
                   onChange={(e) => handleSelectChange(e, seniorityLevelQuestion?.id || "")} // Handle selection change
                 >
-                  <option value="" disabled selected hidden>Select </option>
                   <option className="text-lg" value="High">High</option>
                   <option className="text-lg" value="Mid">Mid</option>
                   <option className="text-lg" value="Low">Low</option>
                 </select>
                 <div className="relative z-10">
-                  <div
-                    className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
-                    onClick={handleDropdownClick} // Handle click on arrow image
-                  >
-                    <img
-                      className="h-[6.6px] w-[12.1px] relative cursor-pointer"
-                      alt=""
-                      src="/vector-5.svg"
-                    />
-                  </div>
-                </div>
+            <div
+              className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+              onClick={handleDropdownClick} // Handle click on arrow image
+            >
+              <img
+                className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                alt=""
+                src="/vector-5.svg"
+              />
+            </div>
+          </div>
               </div>
             </div>
             <div className="w-1/7 flex flex-row items-center justify-start gap-[30px] min-w-[178px] min-h-[46px] text-base text-darkslategray-200">
@@ -469,29 +455,28 @@ const VoCodeJobCampaign: FunctionComponent = () => {
               </label>
             </div>
             <div className="w-1/6 flex flex-col items-start justify-start gap-[10px] min-w-[178px]">
-              <b className="relative leading-[25.27px] capitalize">LLM<span className="text-red-500">*</span></b>
+              <b className="relative leading-[25.27px] capitalize">LLM</b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] whitespace-nowrap text-sm border-[0.2px] border-solid border-gray-100">
 
                 <select
                   className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
                   onChange={(e) => handleSelectChange(e, llmQuestion?.id || "")}
                 >
-                  <option value="" disabled selected hidden>Select LLM</option>
                   <option value="Synthflow" className="text-lg">Synthflow</option>
-                  <option value="Vodex" className="text-lg">Vodex</option>
+                  <option value="VoCode" className="text-lg">VoCode</option>
                 </select>
                 <div className="relative z-10">
-                  <div
-                    className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
-                    onClick={handleDropdownClick} // Handle click on arrow image
-                  >
-                    <img
-                      className="h-[6.6px] w-[12.1px] relative cursor-pointer"
-                      alt=""
-                      src="/vector-5.svg"
-                    />
-                  </div>
-                </div>
+            <div
+              className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+              onClick={handleDropdownClick} // Handle click on arrow image
+            >
+              <img
+                className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                alt=""
+                src="/vector-5.svg"
+              />
+            </div>
+          </div>
               </div>
             </div>
           </div>
@@ -659,9 +644,9 @@ const VoCodeJobCampaign: FunctionComponent = () => {
           </div>
         </section>
         <section className="self-stretch bg-white box-border flex flex-col items-start justify-start py-2.5 pr-[51px] pl-[49px] max-w-full text-left text-lg text-gray-100 font-button-button border-[0.5px] border-solid border-gainsboro-100 mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
-          <div className="  self-stretch flex flex-row items-end justify-start max-w-full">
-            <div className=" flex-1 flex flex-row flex-wrap items-end justify-start gap-[20px] max-w-full">
-              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/5 max-w-full">
+          <div className="self-stretch flex flex-row items-end justify-start max-w-full">
+            <div className="flex-1 flex flex-row flex-wrap items-end justify-start gap-[20px] max-w-full">
+              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[330px] max-w-full">
                 <b className="relative leading-[25.27px] capitalize">
                   Voice gender
                 </b>
@@ -695,60 +680,33 @@ const VoCodeJobCampaign: FunctionComponent = () => {
 
                 </div>
               </div>
-              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/5 max-w-full">
-                <b className="relative leading-[25.27px] capitalize">TTS Provider</b>
+              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[330px] max-w-full">
+                <b className="relative leading-[25.27px] capitalize">Voice</b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] max-w-full whitespace-nowrap text-sm border-[0.2px] border-solid border-gray-100">
                   <select
                     className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
                     onChange={(e) => handleSelectChange(e, voiceQuestion?.id || "")} // Handle selection change
                     tabIndex={23}
                   >
-                    <option value="" disabled selected hidden>Select</option>
-                    <option className="text-lg" value="11labs">11labs</option>
-                    <option className="text-lg" value="Deepgram">Deepgram</option>
-                  </select>
-                  <div className="relative z-10">
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
-                      onClick={handleDropdownClick} // Handle click on arrow image
-                    >
-                      <img
-                        className="h-[6.6px] w-[12.1px] relative cursor-pointer"
-                        alt=""
-                        src="/vector-5.svg"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/5 max-w-full">
-                <b className="relative leading-[25.27px] capitalize">Available Voice</b>
-                <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] max-w-full whitespace-nowrap text-sm border-[0.2px] border-solid border-gray-100">
-                  <select
-                    className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
-                    onChange={(e) => handleSelectChange(e, voiceQuestion?.id || "")} // Handle selection change
-                    tabIndex={23}
-                  >
-                    <option value="" disabled selected hidden>Select</option>
-                    <option className="text-lg" value="Voice1">Voice1</option>
+                    <option className="text-lg" value="11Labs Kevin">11Labs Kevin</option>
                     <option className="text-lg" value="Voice2">Voice2</option>
                     <option className="text-lg" value="Voice3">Voice3</option>
                   </select>
                   <div className="relative z-10">
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
-                      onClick={handleDropdownClick} // Handle click on arrow image
-                    >
-                      <img
-                        className="h-[6.6px] w-[12.1px] relative cursor-pointer"
-                        alt=""
-                        src="/vector-5.svg"
-                      />
-                    </div>
-                  </div>
+            <div
+              className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+              onClick={handleDropdownClick} // Handle click on arrow image
+            >
+              <img
+                className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                alt=""
+                src="/vector-5.svg"
+              />
+            </div>
+          </div>
                 </div>
               </div>
-              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/5 max-w-full">
+              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[330px] max-w-full">
                 <b className="relative leading-[25.27px] capitalize">
                   Email Template
                 </b>
@@ -757,26 +715,25 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                     className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
                     onChange={(e) => handleSelectChange(e, emailTemplateQuestion?.id || "")} // Handle selection change
                   >
-                    <option value="" disabled selected hidden>Select</option>
                     <option className="text-lg" value="emailTemplate1">Email Template 1</option>
                     <option className="text-lg" value="emailTemplate2">Email Template 2</option>
                     <option className="text-lg" value="emailTemplate3">Email Template 3</option>
                   </select>
                   <div className="relative z-10">
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
-                      onClick={handleDropdownClick} // Handle click on arrow image
-                    >
-                      <img
-                        className="h-[6.6px] w-[12.1px] relative cursor-pointer"
-                        alt=""
-                        src="/vector-5.svg"
-                      />
-                    </div>
-                  </div>
+            <div
+              className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+              onClick={handleDropdownClick} // Handle click on arrow image
+            >
+              <img
+                className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                alt=""
+                src="/vector-5.svg"
+              />
+            </div>
+          </div>
                 </div>
               </div>
-              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/5 max-w-full">
+              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[330px] max-w-full">
                 <b className="relative leading-[25.27px] capitalize">
                   SMS Template
                 </b>
@@ -785,23 +742,22 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                     className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
                     onChange={(e) => handleSelectChange(e, smsTemplateQuestion?.id || "")} // Handle selection change
                   >
-                    <option value="" disabled selected hidden>Select</option>
                     <option className="text-lg" value="smsTemplateQuestion1">SMS Template 1</option>
                     <option className="text-lg" value="smsTemplate2">SMS Template 2</option>
                     <option className="text-lg" value="smsTemplate3">SMS Template 3</option>
                   </select>
                   <div className="relative z-10">
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
-                      onClick={handleDropdownClick} // Handle click on arrow image
-                    >
-                      <img
-                        className="h-[6.6px] w-[12.1px] relative cursor-pointer"
-                        alt=""
-                        src="/vector-5.svg"
-                      />
-                    </div>
-                  </div>
+            <div
+              className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+              onClick={handleDropdownClick} // Handle click on arrow image
+            >
+              <img
+                className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                alt=""
+                src="/vector-5.svg"
+              />
+            </div>
+          </div>
                 </div>
               </div>
             </div>
@@ -810,8 +766,8 @@ const VoCodeJobCampaign: FunctionComponent = () => {
         <section className="self-stretch bg-white box-border flex flex-col items-start justify-start py-2.5 pr-[51px] pl-[49px] max-w-full border-[0.5px] border-solid border-gainsboro-100 mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
           <footer className="self-stretch flex flex-row flex-wrap items-end justify-start py-0 pr-px pl-0 box-border gap-[20px] max-w-full text-left text-lg text-gray-100 font-button-button">
             <div className="flex-1 flex flex-row items-end justify-start py-0 pr-px pl-0 box-border gap-[20px] min-w-[990px] max-w-full mq1275:min-w-full mq1600:flex-wrap">
-              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/8 max-w-full">
-                <b className="relative leading-[25.27px] capitalize">{testNameQuestion?.label} <span className="text-red-500">*</span></b>
+              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[211px] max-w-full">
+                <b className="relative leading-[25.27px] capitalize">{testNameQuestion?.label}</b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 border-[0.2px] border-solid border-gray-100">
                   <input
                     className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block max-w-full"
@@ -822,14 +778,14 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   />
                 </div>
               </div>
-              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/8 max-w-full">
+              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[211px] max-w-full">
                 <b className="relative leading-[25.27px] capitalize">
-                  {testPhoneNumberQuestion?.label} <span className="text-red-500">*</span>
+                  {testPhoneNumberQuestion?.label}
                 </b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 border-[0.2px] border-solid border-gray-100">
                   <input
                     className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block max-w-full"
-                    placeholder="+12345678912"
+                    placeholder={testPhoneNumberQuestion?.label}
                     type="text"
                     onChange={(e) => handleInputChange(e, testPhoneNumberQuestion?.id || "")}
                     tabIndex={24}
@@ -855,32 +811,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   />
                 </div>
               </div> */}
-              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/8 max-w-full">
-                <b className="relative leading-[25.27px] capitalize">CSV Type</b>
-                <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
-                  <select
-                    className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
-                    onChange={handleCsvChange}
-                  >
-                    <option className="text-lg" value="" disabled selected hidden >Select</option>
-                    <option className="text-lg" value="PlainCSV">Plain CSV</option>
-                    <option className="text-lg" value="JDCSV">JD CSV</option>
-                  </select>
-                  <div className="relative z-10">
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
-                    // onClick={handleDropdownClick} // Handle click on arrow image
-                    >
-                      <img
-                        className="h-[6.6px] w-[12.1px] relative cursor-pointer"
-                        alt=""
-                        src="/vector-8.svg"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/8 max-w-full">
+              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[180px] max-w-full">
                 <b className="relative leading-[25.27px] capitalize">CSV File</b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
                   {/* Input element for file selection */}
@@ -895,34 +826,57 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   <label htmlFor="csvFileInput" className="cursor-pointer">{fileName ? fileName : 'Upload CSV'}</label>
                 </div>
               </div>
-
-              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/20 max-w-full">
+              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[200px] max-w-full">
+      <b className="relative leading-[25.27px] capitalize">CSV Type</b>
+      <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
+        <select
+          className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
+          value={csvType}
+          onChange={handleCsvChange}
+        >
+          <option className="text-lg" value="PlainCSV">Plain CSV</option>
+          <option className="text-lg" value="JDCSV">JD CSV</option>
+        </select>
+        <div className="relative z-10">
+          <div
+            className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+            // onClick={handleDropdownClick} // Handle click on arrow image
+          >
+            <img
+              className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+              alt=""
+              src="/vector-8.svg"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[180px] max-w-full">
                 <b className="relative leading-[25.27px] capitalize">Client name</b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
                   <select
                     className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
                     onChange={(e) => handleSelectChange(e, clientNameQuestion?.id || "")} // Handle selection change
                   >
-                    <option value="" disabled selected hidden>Select</option>
                     <option className="text-lg" value="client1">client 1</option>
                     <option className="text-lg" value="client2">client 2</option>
                     <option className="text-lg" value="client3">client 3</option>
                   </select>
                   <div className="relative z-10">
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
-                      onClick={handleDropdownClick} // Handle click on arrow image
-                    >
-                      <img
-                        className="h-[6.6px] w-[12.1px] relative cursor-pointer"
-                        alt=""
-                        src="/vector-8.svg"
-                      />
-                    </div>
-                  </div>
+            <div
+              className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+              onClick={handleDropdownClick} // Handle click on arrow image
+            >
+              <img
+                className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                alt=""
+                src="/vector-8.svg"
+              />
+            </div>
+          </div>
                 </div>
               </div>
-
+              
             </div>
             <div className="flex flex-row items-end justify-start gap-[10px]">
               <button className="cursor-pointer [border:none] py-[14.008905410766602px] px-[21px] bg-gray-100 h-[51px] rounded-6xs flex flex-row items-center justify-center box-border whitespace-nowrap hover:bg-darkslategray-100">
