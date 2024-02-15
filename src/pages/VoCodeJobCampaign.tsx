@@ -67,7 +67,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     { id: "EmailTemplate", label: "Email Template" },
     { id: "SMSTemplate", label: "SMS Template" },
     { id: "TestName", label: "Name" },
-    { id: "TestPhoneNumber", label: "Phone Number" },
+    { id: "TestPhoneNumber", label: "Phone No." },
     { id: "RecruiterName", label: "Recruiter Name" },
     { id: "ClientName", label: "Client Name" },
   ];
@@ -259,16 +259,16 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     // You can perform additional actions based on the selected value if needed
   };
   return (
-    <div className="w-full relative bg-whitesmoke-100 overflow-hidden flex flex-col items-start justify-start pt-0 px-0 pb-[25px] box-border tracking-[normal]">
+    <div className="w-full relative bg-white overflow-hidden flex flex-col items-start justify-start pt-0 px-0 pb-[25px] box-border tracking-[normal]">
       <GroupComponent />
       <main className="self-stretch flex flex-col items-start justify-start max-w-full">
         <section className="self-stretch bg-white box-border flex flex-col items-start justify-start py-5 pr-[51px] pl-[49px] gap-[8px] max-w-full text-left text-lg text-gray-100 font-button-button border-[0.5px] border-solid border-gainsboro-100 mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
           <div className="w-full self-stretch flex flex-row flex-wrap items-end justify-start py-0 pr-px pl-0 box-border gap-[20px] max-w-full text-left text-lg text-gray-100 font-button-button mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
-            <div className="w-1/4 flex flex-col flex-wrap items-start justify-start gap-[10px] max-w-full">
+            <div className="w-1/5 flex flex-col flex-wrap items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">{campaignNameQuestion?.label} <span className="text-red-500">*</span> {/* Red star icon */}</b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row flex-wrap items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
-                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[250px] max-w-full"
+                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block max-w-full"
                   placeholder={campaignNameQuestion?.label}
                   type="text"
                   onChange={(e) => handleInputChange(e, campaignNameQuestion?.id || "")}
@@ -279,11 +279,11 @@ const VoCodeJobCampaign: FunctionComponent = () => {
               </div>
             </div>
 
-            <div className="w-1/4 flex flex-wrap flex-col items-start justify-start gap-[10px] max-w-full">
+            <div className="w-1/5 flex flex-wrap flex-col items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">{jobTitleQuestion?.label}</b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
-                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[250px] max-w-full"
+                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block max-w-full"
                   placeholder={jobTitleQuestion?.label}
                   type="text"
                   onChange={(e) => handleInputChange(e, jobTitleQuestion?.id || "")}
@@ -304,7 +304,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
               </div>
             </div>
             <button className="cursor-pointer [border:none] p-0 bg-[transparent] gap-[50px] flex flex-row items-end justify-start">
-              <div className="h-[51px] rounded-6xs bg-gray-100 flex flex-row items-center justify-center py-[14.008905410766602px] px-[21px] box-border whitespace-nowrap">
+              <div className="h-[51px] rounded-6xs bg-gray-100 flex flex-row items-center justify-center py-[14px] px-[21px] box-border whitespace-nowrap">
                 <b className="relative text-base tracking-[1.75px] leading-[22.41px] font-button-button text-white text-left">
                   Fetch JD
                 </b>
@@ -328,7 +328,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   {jobType === 'Full Time' && (
                     <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 min-w-[75px] border-[0.2px] border-solid border-gray-100">
                       <input
-                        className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[58px]"
+                        className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[80px]"
                         placeholder={salaryQuestion?.label}
                         type="text"
                         onChange={(e) => handleInputChange(e, salaryQuestion?.id || "")}
@@ -339,9 +339,9 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 </div>
                 <div className="flex-1 flex flex-row  items-start justify-center min-w-[224px] max-w-full text-gray-200">
                   <div className="flex-1 flex flex-row items-center justify-start py-0 pr-px pl-0 box-border gap-[5.81px] items-center max-w-full mq450:flex-wrap">
-                    <div className="flex flex-row items-center justify-start gap-[5.81px]">
+                    <div className="flex flex-row items-center justify-center gap-[10px]">
                       <input
-                        className="cursor-pointer m-0 h-[23.3px] w-[23.3px] rounded-[58.14px] bg-white box-border border-[2.3px] border-solid border-gray-200"
+                        className="cursor-pointer m-0 h-[23.3px] w-[23.3px] justify-center rounded-[58.14px] bg-white box-border border-[2.3px] border-solid border-gray-200 gap-[10px]"
                         checked={jobType === 'Contract'}
                         onChange={handleJobTypeChange}
                         value="Contract"
@@ -354,16 +354,16 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                     </div>
                     {jobType === 'Contract' && (
                       <>
-                        <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 min-w-[75px] border-[0.2px] border-solid border-gray-100">
+                        <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5  min-w-[75px] w-[120px] border-[0.2px] border-solid border-gray-100 gap-[10px]">
                           <input
-                            className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[58px]"
+                            className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block "
                             placeholder={hourlyRateQuestion?.label}
                             type="text"
                             onChange={(e) => handleInputChange(e, hourlyRateQuestion?.id || "")}
                             tabIndex={7}
                           />
                         </div>
-                        <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 min-w-[75px] text-sm text-gray-100 border-[0.2px] border-solid border-gray-100">
+                        <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 w-[120px] min-w-[75px] text-sm text-gray-100 border-[0.2px] border-solid border-gray-100">
                           <input
                             className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[58px]"
                             placeholder={durationQuestion?.label}
@@ -397,7 +397,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 </div>
                 <div className="flex-[0.933] rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 w-3/10 border-[0.2px] border-solid border-gray-100 mq450:flex-1">
                   <input
-                    className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[171px]"
+                    className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block "
                     placeholder={stateQuestion?.label}
                     type="text"
                     onChange={(e) => handleInputChange(e, stateQuestion?.id || "")}
@@ -406,7 +406,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 </div>
                 <div className="flex-[0.933] rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 w-3/10 border-[0.2px] border-solid border-gray-100 mq450:flex-1">
                   <input
-                    className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[171px]"
+                    className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block "
                     placeholder={zipCodeQuestion?.label}
                     type="text"
                     onChange={(e) => handleInputChange(e, zipCodeQuestion?.id || "")}
@@ -606,7 +606,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
         </section>
         <section className="self-stretch bg-white box-border flex flex-col items-start justify-start py-2.5 pr-[51px] pl-[49px] max-w-full text-left text-lg text-gray-100 font-button-button border-[0.5px] border-solid border-gainsboro-100 mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
           <div className="self-stretch flex flex-row flex-wrap items-end justify-start gap-[20px] max-w-full">
-            <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[330px] max-w-full">
+            <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/3 max-w-full">
               <b className="relative leading-[25.27px] capitalize">{recruiterNameQuestion?.label}</b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
@@ -618,7 +618,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 />
               </div>
             </div>
-            <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[330px] max-w-full">
+            <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/3 max-w-full">
               <b className="relative leading-[25.27px] capitalize">{recruiterPhoneNumberQuestion?.label}</b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
@@ -630,7 +630,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 />
               </div>
             </div>
-            <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[330px] max-w-full">
+            <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/3 max-w-full">
               <b className="relative leading-[25.27px] capitalize">
                 {recruiterEmailQuestion?.label}
               </b>
@@ -809,7 +809,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
         </section>
         <section className="self-stretch bg-white box-border flex flex-col items-start justify-start py-2.5 pr-[51px] pl-[49px] max-w-full border-[0.5px] border-solid border-gainsboro-100 mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
           <footer className="self-stretch flex flex-row flex-wrap items-end justify-start py-0 pr-px pl-0 box-border gap-[20px] max-w-full text-left text-lg text-gray-100 font-button-button">
-            <div className="flex-1 flex flex-row items-end justify-start py-0 pr-px pl-0 box-border gap-[20px] min-w-[990px] max-w-full mq1275:min-w-full mq1600:flex-wrap">
+            <div className="flex-1 flex flex-row items-end justify-start py-0 pr-px pl-0 box-border gap-[20px] max-w-full mq1275:min-w-full mq1600:flex-wrap">
               <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/8 max-w-full">
                 <b className="relative leading-[25.27px] capitalize">{testNameQuestion?.label} <span className="text-red-500">*</span></b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 border-[0.2px] border-solid border-gray-100">
@@ -837,24 +837,13 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 </div>
               </div>
               <button
-                className="cursor-pointer border-none py-[14.008905410766602px] px-[21px] bg-deepskyblue-100 h-[51px] rounded-6xs flex items-center justify-center box-border whitespace-nowrap hover:bg-deepskyblue-200"
+                className="cursor-pointer border-none py-[14px] px-[21px] bg-deepskyblue-100 h-[51px] rounded-6xs flex items-center justify-center box-border whitespace-nowrap hover:bg-deepskyblue-200 w-1/10"
                 onClick={() => testCampaignDataEndpoint(campaignFormData)} // Call the function directly on button click
               >
                 <b className="relative text-base tracking-[1.75px] leading-[22.41px] uppercase font-button-button text-white text-left">
                   test call
                 </b>
               </button>
-              {/* <div className="flex-1 flex flex-col items-start justify-start gap-[10px] min-w-[211px] max-w-full">
-                <b className="relative leading-[25.27px] capitalize">{`Recruiter Name `}</b>
-                <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
-                  <div className="flex-1 relative leading-[25.27px]">Name</div>
-                  <img
-                    className="h-[6.6px] w-[12.1px] relative"
-                    alt=""
-                    src="/vector-8.svg"
-                  />
-                </div>
-              </div> */}
               <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/8 max-w-full">
                 <b className="relative leading-[25.27px] capitalize">CSV Type</b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
@@ -896,7 +885,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 </div>
               </div>
 
-              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/20 max-w-full">
+              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/8 max-w-full">
                 <b className="relative leading-[25.27px] capitalize">Client name</b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
                   <select

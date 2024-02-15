@@ -123,7 +123,7 @@ const GroupComponent: FunctionComponent<GroupComponentType> = ({
           </b>
         </button>
       </div>
-      <img
+      {/* <img
         className="h-[25px] w-[23px] relative z-[1]"
         loading="eager"
         alt=""
@@ -134,7 +134,7 @@ const GroupComponent: FunctionComponent<GroupComponentType> = ({
         loading="eager"
         alt=""
         src="/group-4.svg"
-      />
+      /> */}
       <img
         className="h-[45px] w-[45px] relative rounded-[50%] object-cover z-[1]"
         loading="eager"
