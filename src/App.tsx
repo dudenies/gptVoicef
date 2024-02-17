@@ -1,10 +1,7 @@
 import { useEffect } from "react";
-import {
-  Routes,
-  Route,
-  useNavigationType,
-  useLocation,
-} from "react-router-dom";
+import { Routes, Route, useNavigationType, useLocation } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 import VoCodeJobCampaign from "./pages/VoCodeJobCampaign";
 import Company from "./pages/Company";
 import VoCodeRecruiterProfile from "./pages/VoCodeRecruiterProfile";
@@ -44,9 +41,9 @@ function App() {
     }
 
     if (metaDescription) {
-      const metaDescriptionTag: HTMLMetaElement | null = document.querySelector(
+      const metaDescriptionTag = document.querySelector(
         'head > meta[name="description"]'
-      );
+      ) as HTMLMetaElement | null;
       if (metaDescriptionTag) {
         metaDescriptionTag.content = metaDescription;
       }
@@ -54,14 +51,20 @@ function App() {
   }, [pathname]);
 
   return (
-    <Routes>
-      <Route path="/" element={<VoCodeJobCampaign />} />
-      <Route path="/company" element={<Company />} />
-      <Route
-        path="/vocoderecruiterprofile"
-        element={<VoCodeRecruiterProfile />}
-      />
-    </Routes>
+    <div>
+      {/* Render ToastContainer */}
+      <ToastContainer />
+
+      {/* Define Routes */}
+      <Routes>
+        <Route path="/" element={<VoCodeJobCampaign />} />
+        <Route path="/company" element={<Company />} />
+        <Route
+          path="/vocoderecruiterprofile"
+          element={<VoCodeRecruiterProfile />}
+        />
+      </Routes>
+    </div>
   );
 }
 export default App;

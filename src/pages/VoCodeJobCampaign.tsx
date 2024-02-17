@@ -1,8 +1,10 @@
 import { FunctionComponent } from "react";
 //import useState
 import { useState, useEffect, useRef } from "react";
-
+import { CustomToast } from "../components/shared-components/Toast";
 import GroupComponent from "../components/GroupComponent";
+import { ToastContainer } from "react-toastify";
+import { toast } from 'react-toastify';
 import {
   runCampaign, testCampaign
 } from "../services/campaign.services";
@@ -16,9 +18,17 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     try {
       const response = await runCampaign(data);
       console.log('Campaign data written successfully:', response);
+      CustomToast({
+        message: response.response,
+        type: response.status,
+      });
       // Handle success response if needed
     } catch (error) {
       console.error('Error writing campaign data:', error);
+      CustomToast({
+        message: "Error writing campaign data",
+        type: "error",
+      });
       // Handle error if needed
     }
   }
@@ -33,9 +43,17 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     try {
       const response = await testCampaign(data);
       console.log('Campaign data written successfully:', response);
+      CustomToast({
+        message: response.response,
+        type: response.status,
+      });
       // Handle success response if needed
     } catch (error) {
       console.error('Error writing campaign data:', error);
+      CustomToast({
+        message: "Error writing campaign data",
+        type: "error",
+      });
       // Handle error if needed
     }
   }
@@ -206,7 +224,9 @@ const VoCodeJobCampaign: FunctionComponent = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; // Get the selected file
     if (!file) return;
-
+    if (file) {
+      setFileName(file.name); // Update the state with the file name
+    }
     const reader = new FileReader();
     reader.onload = (event) => {
       if (!event.target) return;
@@ -280,7 +300,8 @@ const VoCodeJobCampaign: FunctionComponent = () => {
             </div>
 
             <div className="w-1/5 flex flex-wrap flex-col items-start justify-start gap-[10px] max-w-full">
-              <b className="relative leading-[25.27px] capitalize">{jobTitleQuestion?.label}</b>
+              <b className="relative leading-[25.27px] capitalize">{jobTitleQuestion?.label}
+              <span className="text-red-500">*</span></b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
                   className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block max-w-full"
@@ -311,7 +332,8 @@ const VoCodeJobCampaign: FunctionComponent = () => {
               </div>
             </button>
             <div className="w-1/4 flex flex-col items-start justify-start gap-[10px] max-w-full">
-              <b className="relative leading-[25.27px] capitalize">Job Type</b>
+              <b className="relative leading-[25.27px] capitalize">Job Type
+              <span className="text-red-500">*</span></b>
               <div className="self-stretch flex flex-row items-center justify-start py-0 pr-px pl-0 box-border gap-[10px] max-w-full text-base text-darkslategray-200 mq900:flex-wrap">
                 <div className="flex flex-row items-center justify-start gap-[5.81px]">
                   <input
@@ -382,7 +404,8 @@ const VoCodeJobCampaign: FunctionComponent = () => {
           </div>
           <div className="self-stretch flex flex-row flex-wrap items-end justify-start py-0 pr-0.5 pl-0 box-border gap-[20px] max-w-full text-left text-lg text-gray-100 font-button-button">
             <div className="w-1/2 flex flex-col items-start justify-start gap-[15px] max-w-full">
-              <b className="relative leading-[25.27px] capitalize">Job Location</b>
+              <b className="relative leading-[25.27px] capitalize">Job Location
+              <span className="text-red-500">*</span></b>
               <div className="self-stretch flex flex-row items-start justify-start py-0 pr-px pl-0 gap-[10px] mq900:flex-wrap">
                 <div className="flex-1 flex flex-row items-center justify-start w-3/10">
                   <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 border-[0.2px] border-solid border-gray-100">
@@ -479,6 +502,8 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   <option value="" disabled selected hidden>Select LLM</option>
                   <option value="Synthflow" className="text-lg">Synthflow</option>
                   <option value="Vodex" className="text-lg">Vodex</option>
+                  {/* <option value="Vocode" className="text-lg">VoCode</option> */}
+
                 </select>
                 <div className="relative z-10">
                   <div
@@ -499,6 +524,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
             <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">
                 Job Description
+                <span className="text-red-500">*</span>
               </b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 min-h-[222px] max-w-full text-sm border-[0.2px] border-solid border-gray-100" style={{ wordWrap: 'break-word' }}>
                 <div className="flex-1 relative leading-[25.27px]">
@@ -516,7 +542,8 @@ const VoCodeJobCampaign: FunctionComponent = () => {
           </div>
           <div className="self-stretch flex flex-row items-end justify-start max-w-full text-left text-lg text-gray-100 font-button-button">
             <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
-              <b className="relative leading-[25.27px] capitalize">Required Skills</b>
+              <b className="relative leading-[25.27px] capitalize">Required Skills
+              <span className="text-red-500">*</span></b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap ">
                   {requiredSkills.map((skill, index) => (
@@ -607,7 +634,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
         <section className="self-stretch bg-white box-border flex flex-col items-start justify-start py-2.5 pr-[51px] pl-[49px] max-w-full text-left text-lg text-gray-100 font-button-button border-[0.5px] border-solid border-gainsboro-100 mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
           <div className="self-stretch flex flex-row flex-wrap items-end justify-start gap-[20px] max-w-full">
             <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/3 max-w-full">
-              <b className="relative leading-[25.27px] capitalize">{recruiterNameQuestion?.label}</b>
+              <b className="relative leading-[25.27px] capitalize">{recruiterNameQuestion?.label}<span className="text-red-500">*</span></b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
                   className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] capitalize text-gray-100 text-left inline-block min-w-[250px] max-w-full"
@@ -619,7 +646,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
               </div>
             </div>
             <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/3 max-w-full">
-              <b className="relative leading-[25.27px] capitalize">{recruiterPhoneNumberQuestion?.label}</b>
+              <b className="relative leading-[25.27px] capitalize">{recruiterPhoneNumberQuestion?.label}<span className="text-red-500">*</span></b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
                   className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] capitalize text-gray-100 text-left inline-block min-w-[250px] max-w-full"
