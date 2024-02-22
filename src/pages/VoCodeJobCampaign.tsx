@@ -21,7 +21,6 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     label: string;
   }
   async function runCampaignDataEndpoint(data: any) {
-    // data = editFormData(data)
     try {
       const response = await runCampaign(data);
       console.log('Campaign data written successfully:', response);
@@ -47,7 +46,6 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     }
   };
   async function testCampaignDataEndpoint(data: any) {
-    // data = editFormData(data)
     try {
       const response = await testCampaign(data);
       console.log('Campaign data written successfully:', response);
