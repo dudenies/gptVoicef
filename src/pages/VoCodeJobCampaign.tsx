@@ -14,10 +14,6 @@ import {
   searchJob
 } from "../services/jobdiva.services";
 
-
-const formSchema = z.object({
-  username: z.string().min(2).max(50),
-})
 const VoCodeJobCampaign: FunctionComponent = () => {
   type CsvRow = { Name: string; Phone: string };
   interface Question {
