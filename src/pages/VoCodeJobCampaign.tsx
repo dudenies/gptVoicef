@@ -2,12 +2,23 @@ import { FunctionComponent } from "react";
 //import useState
 import { useState, useEffect, useRef } from "react";
 import { CustomToast } from "../components/shared-components/Toast";
+import  LoadingSpinner  from "../components/shared-components/loader";
+
 import GroupComponent from "../components/GroupComponent";
-import { ToastContainer } from "react-toastify";
-import { toast } from 'react-toastify';
+// import { Input, Select, Radio } from 'shadcn/ui';
+
 import {
   runCampaign, testCampaign
 } from "../services/campaign.services";
+import {
+  searchJob
+} from "../services/jobdiva.services";
+
+import { z } from "zod"
+
+const formSchema = z.object({
+  username: z.string().min(2).max(50),
+})
 const VoCodeJobCampaign: FunctionComponent = () => {
   type CsvRow = { Name: string; Phone: string };
   interface Question {
@@ -15,6 +26,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     label: string;
   }
   async function runCampaignDataEndpoint(data: any) {
+    data = editFormData(data)
     try {
       const response = await runCampaign(data);
       console.log('Campaign data written successfully:', response);
@@ -40,6 +52,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     }
   };
   async function testCampaignDataEndpoint(data: any) {
+    data = editFormData(data)
     try {
       const response = await testCampaign(data);
       console.log('Campaign data written successfully:', response);
@@ -60,7 +73,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
   const campaignQuestions: Question[] = [
     { id: "CampaignName", label: "Campaign Name" },
     { id: "JobTitle", label: "Job Title" },
-    { id: "JobDivaJobID", label: "JobDiva Job ID" },
+    { id: "JobID", label: "Job ID" },
     { id: "JobType", label: "Job Type" },
     { id: "Salary", label: "Salary" },
     { id: "HourlyRate", label: "Hourly Rate" },
@@ -88,10 +101,14 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     { id: "TestPhoneNumber", label: "Phone No." },
     { id: "RecruiterName", label: "Recruiter Name" },
     { id: "ClientName", label: "Client Name" },
+    { id: "atscrm", label: "ATS/CRM" },
+    { id: "jobTemplate", label: "Job Template" },
+
+
   ];
   const campaignNameQuestion = campaignQuestions.find(question => question.id === "CampaignName");
   const jobTitleQuestion = campaignQuestions.find(question => question.id === "JobTitle");
-  const jobDivaJobIDQuestion = campaignQuestions.find(question => question.id === "JobDivaJobID");
+  const JobIDQuestion = campaignQuestions.find(question => question.id === "JobID");
   const jobTypeQuestion = campaignQuestions.find(question => question.id === "JobType");
   const salaryQuestion = campaignQuestions.find(question => question.id === "Salary");
   const hourlyRateQuestion = campaignQuestions.find(question => question.id === "HourlyRate");
@@ -117,6 +134,9 @@ const VoCodeJobCampaign: FunctionComponent = () => {
   const testNameQuestion = campaignQuestions.find(question => question.id === "TestName");
   const testPhoneNumberQuestion = campaignQuestions.find(question => question.id === "TestPhoneNumber");
   const clientNameQuestion = campaignQuestions.find(question => question.id === "ClientName");
+  const atsCrmQuestion = campaignQuestions.find(question => question.id === "atscrm");
+  const jobTemplateQuestion = campaignQuestions.find(question => question.id === "jobTemplate");
+
   type FormData = {
     [key: string]: string | string[];
   };
@@ -129,10 +149,15 @@ const VoCodeJobCampaign: FunctionComponent = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
     const { value } = e.target;
     setFormData((prevData: any) => ({ ...prevData, [id]: value }));
+    if (['JobTitle', 'City', 'State', 'ZipCode', 'JobDescription'].includes(id)) {
+      // Update JobDivaData only for specified fields
+      setJobDivaData((prevData: any) => ({ ...prevData, [id]: value }));
+    }
   };
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>, id: string) => {
     const { value } = e.target;
     setFormData((prevData: any) => ({ ...prevData, [id]: value }));
+    setJobDivaData((prevData: any) => ({ ...prevData, [id]: value }));
   };
   const [jobType, setJobType] = useState<string>('Full Time');
 
@@ -278,6 +303,84 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     setCsvType(e.target.value);
     // You can perform additional actions based on the selected value if needed
   };
+  const [jobDivaData, setJobDivaData] = useState({ City: "", JobTitle: "", JobType: "", State: "", ZipCode: "", desired_skills: "", JobDescription: "", required_skills: "" });
+  const [jobDivaID, setJobDivaID] = useState("");
+  const [loading, setLoading] = useState(false);
+  const handleFetchClick = async () => {
+    setLoading(true);
+    try {
+      const searchValue = jobDivaID; // Define the search value '11766307'
+      const result = await searchJob(searchValue); // Call the searchJob function
+      console.log('Search result:', result); // Log the result to the console
+      setJobDivaData(result)
+      const desired_skills: string = result.desired_skills;
+      const desired_skills_list: string[] = desired_skills.split(",").map(skill => skill.trim());
+      const required_skills: string = result.required_skills;
+      const required_skills_list: string[] = required_skills.split(",").map(skill => skill.trim());
+      setRequiredSkills(required_skills_list)
+      setDesiredSkills(desired_skills_list)
+      setFormData((prevData: any) => ({
+        ...prevData,
+        RequiredSkills: required_skills_list,
+        DesiredSkills: desired_skills_list,
+        JobTitle:result.JobTitle,
+        City: result.City,
+        State: result.State,
+      }));
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching job:', error);
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    // Your logic here to handle the changes in campaignFormData
+    console.log('campaignFormData changed:', campaignFormData);
+  }, [jobDivaID]);
+  const handleJobDivaIDChange = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    const inputValue = e.target.value;
+    setJobDivaID(inputValue);
+    console.log(inputValue, jobDivaID)
+    setFormData((prevData: any) => ({ ...prevData, [id]: inputValue })); // Update jobDivaID
+  };
+  const editFormData = (formData: any) => {
+    // Create a copy of the original form data
+    const editedFormData = { ...formData };
+  
+    // Check for duplicate keys
+    const uniqueKeys = new Set(Object.keys(editedFormData));
+    if (uniqueKeys.size !== Object.keys(editedFormData).length) {
+      console.error('Duplicate keys detected in form data.');
+      return formData; // Return original form data without any changes
+    }
+  
+    // Check the value of JobType and remove keys accordingly
+    const jobType = editedFormData.JobType;
+    if (jobType === 'Fulltime') {
+      delete editedFormData.Duration;
+      delete editedFormData.HourlyRate;
+    } else if (jobType === 'Contract') {
+      delete editedFormData.Salary;
+    }
+  
+    return editedFormData;
+  };
+  const [inputs, setInputs] = useState({
+    // Assuming these are your input fields
+    input1: '',
+    input2: '',
+    input3: '',
+    select1: '',
+    select2: '',
+  });
+
+  const handleNewJobClick = () => {
+    // Clear all input fields
+    setJobDivaData({ City: "", JobTitle: "", JobType: "", State: "", ZipCode: "", desired_skills: "", JobDescription: "", required_skills: "" })
+    setRequiredSkills([])
+    setDesiredSkills([])
+  };
+  
   return (
     <div className="w-full relative bg-white overflow-hidden flex flex-col items-start justify-start pt-0 px-0 pb-[25px] box-border tracking-[normal]">
       <GroupComponent />
@@ -285,55 +388,119 @@ const VoCodeJobCampaign: FunctionComponent = () => {
         <section className="self-stretch bg-white box-border flex flex-col items-start justify-start py-5 pr-[51px] pl-[49px] gap-[8px] max-w-full text-left text-lg text-gray-100 font-button-button border-[0.5px] border-solid border-gainsboro-100 mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
           <div className="w-full self-stretch flex flex-row flex-wrap items-end justify-start py-0 pr-px pl-0 box-border gap-[20px] max-w-full text-left text-lg text-gray-100 font-button-button mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
             <div className="w-1/5 flex flex-col flex-wrap items-start justify-start gap-[10px] max-w-full">
-              <b className="relative leading-[25.27px] capitalize">{campaignNameQuestion?.label} <span className="text-red-500">*</span> {/* Red star icon */}</b>
-              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row flex-wrap items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
-                <input
-                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block max-w-full"
-                  placeholder={campaignNameQuestion?.label}
-                  type="text"
-                  onChange={(e) => handleInputChange(e, campaignNameQuestion?.id || "")}
-                  tabIndex={1}
-                  required // Add the required attribute
-                />
-
+              <b className="relative leading-[25.27px] capitalize">{atsCrmQuestion?.label}  {/* Red star icon */}</b>
+              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] whitespace-nowrap text-sm border-[0.2px] border-solid border-gray-100">
+                <select
+                  className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
+                  onChange={(e) => handleSelectChange(e, atsCrmQuestion?.id || "")} // Handle selection change
+                >
+                  <option value="" disabled selected hidden>Select </option>
+                  <option className="text-lg" value="JobDiva">JobDiva</option>
+                  <option className="text-lg" value="option 2">option 2</option>
+                  <option className="text-lg" value="option 3">option 3</option>
+                </select>
+                <div className="relative z-10">
+                  <div
+                    className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+                    onClick={handleDropdownClick} // Handle click on arrow image
+                  >
+                    <img
+                      className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                      alt=""
+                      src="/vector-5.svg"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
+            <div className="w-[163px] flex flex-col items-start justify-start gap-[10px] min-w-[106px]">
+              <b className="relative leading-[25.27px] capitalize">{JobIDQuestion?.label}</b>
+              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 border-[0.2px] border-solid border-gray-100">
+                <input
+                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[86px]"
+                  placeholder={JobIDQuestion?.label}
+                  type="text"
+                  onChange={(e) => handleJobDivaIDChange(e, JobIDQuestion?.id || "")}
+                  tabIndex={3}
+                  // value={inputs.input1}
+                />
+              </div>
+            </div>
+            <button className="cursor-pointer [border:none] p-0 bg-[transparent] gap-[50px] flex flex-row items-end justify-start" onClick={handleFetchClick}>
+              <div className="h-[51px] rounded-6xs bg-gray-100 flex flex-row items-center justify-center py-[14px] px-[21px] box-border whitespace-nowrap">
+                <b className="relative text-base tracking-[1.75px] leading-[22.41px] font-button-button text-white text-left">
+                  FETCH
+                </b>
+                {/* Display loader if loading is true */}
+              </div>
+            </button>
+            {loading && 
+      <LoadingSpinner />}
+
+            <div className="w-1/4 flex flex-col items-start justify-start gap-[10px] max-w-full">
+              <b className="relative leading-[25.27px] capitalize">Job Template
+              </b>
+              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] whitespace-nowrap text-sm border-[0.2px] border-solid border-gray-100">
+                <select
+                  className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
+                  onChange={(e) => handleSelectChange(e, jobTemplateQuestion?.id || "")} // Handle selection change
+                >
+                  <option value="" disabled selected hidden>Select </option>
+                  <option className="text-lg" value="FullstackEngineer">Fullstack Engineer</option>
+                  <option className="text-lg" value="DataScientist">Data Scientist</option>
+                  <option className="text-lg" value="DevOpsEngineer">DevOps Engineer</option>
+                </select>
+                <div className="relative z-10">
+                  <div
+                    className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+                    onClick={handleDropdownClick} // Handle click on arrow image
+                  >
+                    <img
+                      className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                      alt=""
+                      src="/vector-5.svg"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end"> {/* This div will push the button to the right corner */}
+              <div
+                className="w-[143px] h-[51px] flex flex-col items-start justify-end py-0 pr-3 pl-0 box-border"
+
+              >
+                {/* <button
+                  className="cursor-pointer h-[51px]  [border:none] p-2.5 bg-orange-500 self-stretch rounded-8xs flex flex-row items-center justify-center z-[1] hover:bg-orange-400"
+                  onClick={handleNewJobClick}
+
+                >
+                  <b className="relative text-sm tracking-[1.75px] leading-[22.41px] font-button-button text-white text-left">
+                    +New Job
+                  </b>
+                </button> */}
+              </div>
+            </div>
+          </div>
+          <div className="w-full self-stretch flex flex-row flex-wrap items-end justify-start py-0 pr-px pl-0 box-border gap-[20px] max-w-full text-left text-lg text-gray-100 font-button-button mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
 
             <div className="w-1/5 flex flex-wrap flex-col items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">{jobTitleQuestion?.label}
-              <span className="text-red-500">*</span></b>
+                <span className="text-red-500">*</span></b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
                   className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block max-w-full"
                   placeholder={jobTitleQuestion?.label}
                   type="text"
+                  value={jobDivaData.JobTitle}
                   onChange={(e) => handleInputChange(e, jobTitleQuestion?.id || "")}
                   tabIndex={2}
                 />
               </div>
             </div>
-            <div className="w-[163px] flex flex-col items-start justify-start gap-[10px] min-w-[106px]">
-              <b className="relative leading-[25.27px] capitalize">{jobDivaJobIDQuestion?.label}</b>
-              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 border-[0.2px] border-solid border-gray-100">
-                <input
-                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[86px]"
-                  placeholder={jobDivaJobIDQuestion?.label}
-                  type="text"
-                  onChange={(e) => handleInputChange(e, jobDivaJobIDQuestion?.id || "")}
-                  tabIndex={3}
-                />
-              </div>
-            </div>
-            <button className="cursor-pointer [border:none] p-0 bg-[transparent] gap-[50px] flex flex-row items-end justify-start">
-              <div className="h-[51px] rounded-6xs bg-gray-100 flex flex-row items-center justify-center py-[14px] px-[21px] box-border whitespace-nowrap">
-                <b className="relative text-base tracking-[1.75px] leading-[22.41px] font-button-button text-white text-left">
-                  Fetch JD
-                </b>
-              </div>
-            </button>
+
             <div className="w-1/4 flex flex-col items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">Job Type
-              <span className="text-red-500">*</span></b>
+                <span className="text-red-500">*</span></b>
               <div className="self-stretch flex flex-row items-center justify-start py-0 pr-px pl-0 box-border gap-[10px] max-w-full text-base text-darkslategray-200 mq900:flex-wrap">
                 <div className="flex flex-row items-center justify-start gap-[5.81px]">
                   <input
@@ -405,13 +572,14 @@ const VoCodeJobCampaign: FunctionComponent = () => {
           <div className="self-stretch flex flex-row flex-wrap items-end justify-start py-0 pr-0.5 pl-0 box-border gap-[20px] max-w-full text-left text-lg text-gray-100 font-button-button">
             <div className="w-1/2 flex flex-col items-start justify-start gap-[15px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">Job Location
-              <span className="text-red-500">*</span></b>
+                <span className="text-red-500">*</span></b>
               <div className="self-stretch flex flex-row items-start justify-start py-0 pr-px pl-0 gap-[10px] mq900:flex-wrap">
                 <div className="flex-1 flex flex-row items-center justify-start w-3/10">
                   <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 border-[0.2px] border-solid border-gray-100">
                     <input
                       className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[171px]"
                       placeholder={cityQuestion?.label}
+                      value={jobDivaData.City}
                       type="text"
                       onChange={(e) => handleInputChange(e, cityQuestion?.id || "")}
                       tabIndex={9}
@@ -423,6 +591,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                     className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block "
                     placeholder={stateQuestion?.label}
                     type="text"
+                    value={jobDivaData.State}
                     onChange={(e) => handleInputChange(e, stateQuestion?.id || "")}
                     tabIndex={10}
                   />
@@ -531,6 +700,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   <textarea
                     className="block w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] relative leading-[25.27px] text-gray-100 text-left min-w-[171px] resize-none"
                     placeholder={jobDescriptionQuestion?.label}
+                    value={jobDivaData.JobDescription}
                     rows={10} // Set the number of visible lines
                     onChange={(e) => handleTextareaChange(e, jobDescriptionQuestion?.id || "")} // Use the new function
                   />
@@ -543,41 +713,42 @@ const VoCodeJobCampaign: FunctionComponent = () => {
           <div className="self-stretch flex flex-row items-end justify-start max-w-full text-left text-lg text-gray-100 font-button-button">
             <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">Required Skills
-              <span className="text-red-500">*</span></b>
-              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
-                <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap ">
-                  {requiredSkills.map((skill, index) => (
-                    <div key={index} className="flex items-center gap-[2.91px] rounded-[5.26px] bg-white">
-                      <div className="relative text-sm leading-[25.27px] font-button-button text-gray-100 text-left ">{skill}</div>
-                      <img
-                        className="h-[18.1px] w-[18.1px] cursor-pointer"
-                        alt=""
-                        src="/icbaselineclose.svg"
-                        onClick={() => handleSkillRemove(index)}
-                      />
-                    </div>
-                  ))}
-                  <input
-                    className="w-[calc(100%_-_38.1px)] [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[10px]"
-                    placeholder="Type a skill"
-                    type="text"
-                    value={requiredskillInput}
-                    onChange={(e) => setRequiredSkillInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    tabIndex={14}
-                  />
-                </div>
-              </div>
+                <span className="text-red-500">*</span></b>
+                <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
+  <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap flex-wrap ">
+    {requiredSkills.map((skill, index) => (
+      <div key={index} className="flex flex-row items-center gap-[2.91px] rounded-[5.26px] bg-white mb-2.5">
+        <div className="relative text-sm leading-[15.27px] font-button-button text-gray-100 text-left">{skill}</div>
+        <img
+          className="h-[18.1px] w-[18.1px] cursor-pointer"
+          alt=""
+          src="/icbaselineclose.svg"
+          onClick={() => handleSkillRemove(index)}
+        />
+      </div>
+    ))}
+    <input
+      className="w-[calc(100%_-_38.1px)] [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[15.27px] text-gray-100 text-left inline-block min-w-[10px]"
+      placeholder="Type a skill"
+      type="text"
+      value={requiredskillInput}
+      onChange={(e) => setRequiredSkillInput(e.target.value)}
+      onKeyDown={handleKeyDown}
+      tabIndex={14}
+    />
+  </div>
+</div>
+
             </div>
           </div>
           <div className="self-stretch flex flex-row items-end justify-start max-w-full text-left text-lg text-gray-100 font-button-button">
             <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">Desired Skills</b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
-                <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap ">
+                <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap flex-wrap ">
                   {desiredSkills.map((skill, index) => (
                     <div key={index} className="flex items-center gap-[2.91px] rounded-[5.26px] bg-white">
-                      <div className="relative text-sm leading-[25.27px] font-button-button text-gray-100 text-left ">{skill}</div>
+                      <div className="relative text-sm leading-[15.27px] font-button-button text-gray-100 text-left ">{skill}</div>
                       <img
                         className="h-[18.1px] w-[18.1px] cursor-pointer"
                         alt=""
@@ -663,7 +834,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
               </b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
-                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] capitalize text-gray-100 text-left inline-block min-w-[250px] max-w-full"
+                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[250px] max-w-full"
                   placeholder={recruiterEmailQuestion?.label}
                   type="text"
                   onChange={(e) => handleInputChange(e, recruiterEmailQuestion?.id || "")}
